@@ -58,9 +58,11 @@ A production-ready full-stack monorepo starter powered by **[Turborepo](https://
 
 ### 2. Installation
 
-Clone the repository and install all workspace dependencies from the root:
+Clone the repository and install all workspace dependencies:
 
 ```bash
+git clone https://github.com/shariarSultanFahim/fullstack-turborepo-starter-kit.git
+cd fullstack-turborepo-starter-kit
 npm install
 ```
 
