@@ -33,6 +33,7 @@
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/pg": "^8.20.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.15.0",
     "eslint": "^8.56.0",
@@ -43,6 +44,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@repo/types": "*",
@@ -66,6 +68,7 @@
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.20.0",
     "socket.io": "^4.7.5",
+    "swagger-ui-express": "^5.0.1",
     "tesseract.js": "^6.0.1",
     "winston": "^3.13.0",
     "winston-daily-rotate-file": "^5.0.0",

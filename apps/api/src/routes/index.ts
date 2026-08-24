@@ -1,26 +1,22 @@
 import express from "express";
 
-import { AuthRoutes } from "../app/modules/auth/auth.route";
-import { OAuthRoutes } from "../app/modules/passport/oauth.route";
-import { UserRoutes } from "../app/modules/user/user.route";
+import { V1Routes } from "./v1";
 
 const router = express.Router();
 
-const apiRoutes = [
+const versionRoutes = [
   {
-    path: "/user",
-    route: UserRoutes
-  },
-  {
-    path: "/auth",
-    route: AuthRoutes
-  },
-  {
-    path: "/oauth",
-    route: OAuthRoutes
+    path: "/v1",
+    route: V1Routes
   }
+  // Future API versions can be added here without touching v1:
+  // {
+  //   path: "/v2",
+  //   route: V2Routes
+  // }
 ];
 
-apiRoutes.forEach((route) => router.use(route.path, route.route));
+versionRoutes.forEach((version) => router.use(version.path, version.route));
 
+export { V1Routes };
 export default router;

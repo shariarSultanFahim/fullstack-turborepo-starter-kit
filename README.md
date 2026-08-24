@@ -1,6 +1,6 @@
 # 🚀 Next.js & Express.js Turborepo Monorepo Boilerplate
 
-A production-ready full-stack monorepo starter powered by **[Turborepo](https://turbo.build/repo)**, featuring **Next.js 16 (React 19, Tailwind CSS 4, Shadcn/UI)** on the frontend and **Express.js (TypeScript, Prisma ORM, Socket.IO)** on the backend, complete with shared TypeScript configs, types, validation schemas, UI packages, **multi-theme support**, and **AI agent instructions** for agent-driven development.
+A production-ready full-stack monorepo starter powered by **[Turborepo](https://turbo.build/repo)**, featuring **Next.js 16 (React 19, Tailwind CSS 4, Shadcn/UI)** on the frontend and **Express.js (TypeScript, Prisma ORM, Socket.IO)** on the backend, complete with shared TypeScript configs, types, validation schemas, UI packages, **OpenAPI 3.0 & Swagger UI documentation**, **multi-theme support**, and **AI agent instructions** for agent-driven development.
 
 ---
 
@@ -89,6 +89,8 @@ npm run dev
 
 - **Frontend**: [http://localhost:3000](http://localhost:3000)
 - **Backend API**: [http://localhost:5000](http://localhost:5000)
+- **Interactive API Docs (Swagger)**: [http://localhost:5000/api/docs](http://localhost:5000/api/docs)
+- **Raw OpenAPI 3.0 Spec**: [http://localhost:5000/api/docs.json](http://localhost:5000/api/docs.json)
 
 ---
 
@@ -160,6 +162,21 @@ This monorepo is **AI-agent ready** with a single canonical rules file that all 
 - **Error handling** — `ApiError`, `catchAsync`, global error handler
 
 > All three agent instruction files mirror the same conventions so any AI tool produces consistent code regardless of which assistant is in use.
+
+---
+
+## 📖 OpenAPI 3.0 & Swagger Documentation
+
+The backend includes automated **OpenAPI 3.0 documentation** generated directly from existing Zod validation schemas using `@asteasolutions/zod-to-openapi` and served via `swagger-ui-express`.
+
+- **Interactive Explorer**: [http://localhost:5000/api/docs](http://localhost:5000/api/docs)
+- **Raw JSON Spec**: [http://localhost:5000/api/docs.json](http://localhost:5000/api/docs.json)
+
+### Key Features
+- **Zero JSDoc comments**: OpenAPI metadata wraps existing Zod schemas in modular `<module>.openapi.ts` files.
+- **Strict Response Sync**: Response schemas strictly reflect `sendResponse` (`{ success, statusCode, message, data, pagination? }`) and `globalErrorHandler` (`{ success, message, errorMessages, stack? }`).
+- **Version Aware**: Pre-configured with `/api/v1` server base URL.
+- **Production Safe**: Automatically available in development, guarded by `ENABLE_API_DOCS=true` in production environments.
 
 ---
 

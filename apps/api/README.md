@@ -15,6 +15,7 @@ A scalable, production-grade Express.js backend boilerplate built with TypeScrip
 - **File Uploads**: [Multer](https://github.com/expressjs/multer) with automated image processing via Jimp / OCR via Tesseract
 - **Real-Time Communication**: [Socket.IO](https://socket.io/) server integration
 - **Email Service**: [Nodemailer](https://nodemailer.com/) with pre-configured SMTP options
+- **API Documentation**: Interactive [Swagger UI](https://swagger.io/tools/swagger-ui/) and raw OpenAPI 3.0 JSON generated directly from Zod schemas via `@asteasolutions/zod-to-openapi`
 - **Shared Monorepo Packages**: Integrated with `@repo/types`, `@repo/validators`, `@repo/tsconfig`, and `@repo/eslint-config`
 
 ---
@@ -31,10 +32,16 @@ apps/api/
 │   ├── app.ts               # Express application configuration & middlewares
 │   ├── config/              # Centralized environment variable loaders
 │   ├── DB/                  # Database connections & seeders
+│   ├── docs/                # OpenAPI registry, generators & Swagger router
+│   │   ├── docs.router.ts   # /api/docs & /api/docs.json endpoints
+│   │   ├── generate-openapi.ts # OpenAPI 3.0 document builder
+│   │   └── openapi-registry.ts # Central registry & response schema helpers
 │   ├── enums/               # Backend enums & status codes
 │   ├── errors/              # Custom AppError & global error handlers
 │   ├── helpers/             # Utility functions & response formatters
-│   ├── routes/              # Centralized API route index
+│   ├── routes/              # Centralized versioned API route index
+│   │   ├── index.ts         # Routes aggregator (/v1, future /v2)
+│   │   └── v1/              # Version 1 module routes aggregation
 │   ├── server.ts            # Server entrypoint (HTTP + Socket.IO)
 │   ├── shared/              # Shared backend helpers (logger, pick, pagination)
 │   ├── types/               # Backend-specific types
@@ -58,7 +65,7 @@ This app is part of an AI-agent-ready monorepo. The canonical coding rules are m
 
 Backend-specific rules enforced by the instructions:
 
-### Module Pattern (4-file structure per feature)
+### Module Pattern (4 Core + 1 Optional OpenAPI file per feature)
 
 Every feature module follows this strict pattern:
 
@@ -67,7 +74,8 @@ src/app/modules/<module>/
 ├── <module>.validation.ts   # Zod schemas — names: create<Action>ZodSchema
 ├── <module>.route.ts        # Express router — mount validateRequest() before controller
 ├── <module>.controller.ts   # Thin handlers — use catchAsync, call service, call sendResponse
-└── <module>.service.ts      # All business logic & Prisma queries — throw ApiError on errors
+├── <module>.service.ts      # All business logic & Prisma queries — throw ApiError on errors
+└── <module>.openapi.ts      # OpenAPI 3.0 schema and path registrations with central registry
 ```
 
 ### Response Format

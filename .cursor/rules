@@ -169,10 +169,11 @@ src/
         <module>.validation.ts
   config/          # index.ts, passport.ts, strategies/
   DB/              # Prisma client init
+  docs/          # OpenAPI registry, generators & Swagger router
   enums/           # Shared enums
   errors/          # ApiError.ts, handleZodError.ts, handleValidationError.ts
   helpers/         # emailHelper.ts, jwtHelper.ts
-  routes/          # Root router index.ts
+  routes/          # Versioned route index (index.ts, v1/, etc.)
   shared/          # catchAsync.ts, sendResponse.ts, logger.ts, prisma.ts
   types/           # IUser, ILoginData, etc.
   util/            # generateOTP.ts, cryptoToken.ts
@@ -180,12 +181,22 @@ src/
   server.ts        # HTTP server entry point
 ```
 
-### Module Pattern
-Each feature module contains exactly 4 files:
+### Module Pattern & OpenAPI Documentation
+Each feature module contains:
 1. **`<module>.validation.ts`** — Zod schemas (`create<Action>ZodSchema`)
 2. **`<module>.route.ts`** — Router: mount `validateRequest` → controller
 3. **`<module>.controller.ts`** — `catchAsync` + call service + `sendResponse`
 4. **`<module>.service.ts`** — Business logic + Prisma queries + `ApiError` throws
+5. **`<module>.openapi.ts`** — OpenAPI 3.0 registrations using `.openapi()` on Zod schemas + `registry.registerPath({...})`
+
+### Mandatory OpenAPI Rule
+- **Every new/updated endpoint MUST have corresponding OpenAPI docs in `<module>.openapi.ts`**.
+- Extend validation schemas using `.openapi()`, use `createSuccessResponseSchema` / `createErrorResponseSchema`, and register in `src/docs/generate-openapi.ts`.
+- No JSDoc inline comments for swagger — everything lives in `<module>.openapi.ts`.
+
+### Routing & Versioning
+- Routes are organized under `src/routes/v1/` and mounted at `/api/v1`.
+- Swagger UI is served at `/api/docs` and JSON spec at `/api/docs.json`.
 
 ### Response Format
 ```ts

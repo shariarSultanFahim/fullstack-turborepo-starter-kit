@@ -205,10 +205,11 @@ src/
         <module>.validation.ts
   config/          # index.ts (env config), passport.ts, strategies/
   DB/              # Prisma client initialization
+  docs/          # OpenAPI registry, generators & Swagger router
   enums/           # Shared TypeScript enums
   errors/          # ApiError.ts, handleZodError.ts, handleValidationError.ts
   helpers/         # emailHelper.ts, jwtHelper.ts, etc.
-  routes/          # index.ts — root router aggregating all module routes
+  routes/          # Versioned route aggregators (index.ts, v1/, etc.)
   shared/          # catchAsync.ts, sendResponse.ts, logger.ts, prisma.ts, emailTemplate.ts
   types/           # TypeScript types/interfaces (IUser, ILoginData, etc.)
   util/            # Pure utility functions (generateOTP.ts, cryptoToken.ts)
@@ -216,14 +217,31 @@ src/
   server.ts        # HTTP server entry point
 ```
 
-## Module Pattern (Controller / Service / Route / Validation)
+## Module Pattern (Controller / Service / Route / Validation / OpenAPI)
 
-Each module follows a strict 4-file pattern:
+Each module follows a strict 5-file pattern:
 
 - **`<module>.validation.ts`** — Zod schemas for request validation. Names: `create<Action>ZodSchema`.
 - **`<module>.route.ts`** — Express router. Mount validation middleware before controller.
 - **`<module>.controller.ts`** — Thin handlers. Use `catchAsync`. Call service, call `sendResponse`.
 - **`<module>.service.ts`** — All business logic and Prisma queries. Throws `ApiError` on domain errors.
+- **`<module>.openapi.ts`** — OpenAPI 3.0 registrations using `@asteasolutions/zod-to-openapi` extending Zod schemas.
+
+## Mandatory OpenAPI Documentation Rule
+
+Whenever creating or modifying any API route in `apps/api`:
+- Always create or update `<module>.openapi.ts` in the feature module folder.
+- Extend Zod validation schemas using `.openapi({ description, example })`.
+- Register the route with `registry.registerPath({...})` from `src/docs/openapi-registry.ts`.
+- Wrap response schemas with `createSuccessResponseSchema(...)` or `createErrorResponseSchema(...)`.
+- Import the `<module>.openapi.ts` file in `src/docs/generate-openapi.ts`.
+- Never write inline JSDoc Swagger comments.
+- Docs are served at `/api/docs` and `/api/docs.json`.
+
+## API Versioning & Routing
+
+- All routes are grouped in `src/routes/v1/` and mounted under `/api/v1`.
+- `src/routes/index.ts` aggregates versions (`/v1`, `/v2`, etc.).
 
 ## Request Validation
 

@@ -8,6 +8,7 @@ import { isOriginAllowed } from "./app/logging/cors";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import config from "./config";
 import { initializePassport } from "./config/passport";
+import { DocsRoutes } from "./docs/docs.router";
 import router from "./routes";
 import { Morgan } from "./shared/morgen";
 
@@ -56,11 +57,15 @@ app.use(passport.session());
 //file retrieve
 app.use(express.static("uploads"));
 
+//api documentation
+app.use("/api", DocsRoutes);
+app.use("/api/v1", DocsRoutes);
+
 //router
-app.use("/api/v1", router);
+app.use("/api", router);
 
 //live response
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (_req: Request, res: Response) => {
   res.send(
     ` <!DOCTYPE html>
     <html lang="en">

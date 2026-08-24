@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import {
   ArrowRight,
+  BookOpen,
   Boxes,
   Github,
   Globe,
@@ -69,6 +70,17 @@ export function MonorepoOverview() {
           )}
 
           <Button variant="secondary" size="lg" asChild>
+            <Link
+              href="http://localhost:5000/api/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <BookOpen className="mr-2 h-4 w-4" />
+              API Docs (Swagger)
+            </Link>
+          </Button>
+
+          <Button variant="outline" size="lg" asChild>
             <Link href={siteConfig.social.github} target="_blank" rel="noopener noreferrer">
               <Github className="mr-2 h-4 w-4" />
               GitHub Profile
@@ -174,7 +186,7 @@ export function MonorepoOverview() {
               <CardTitle className="text-xl">Backend API Service</CardTitle>
               <CardDescription>
                 Express.js powered by tsx watch, Prisma ORM (PostgreSQL/MongoDB), Socket.IO server,
-                Winston logging, and JWT authentication.
+                Winston logging, JWT authentication, and automated OpenAPI 3.0 docs.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
@@ -184,6 +196,17 @@ export function MonorepoOverview() {
                   <span className="text-foreground font-mono font-medium">
                     http://localhost:5000
                   </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Swagger Docs</span>
+                  <Link
+                    href="http://localhost:5000/api/docs"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary font-mono font-medium hover:underline"
+                  >
+                    /api/docs ↗
+                  </Link>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Package Name</span>

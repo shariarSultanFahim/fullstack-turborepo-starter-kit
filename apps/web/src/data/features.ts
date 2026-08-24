@@ -34,5 +34,15 @@ export const featuresData: FeatureItem[] = [
     title: "Tailwind CSS 4 & Shadcn UI",
     desc: "Accessible Radix UI primitives, dark/light themes via next-themes, and rich sonner toasts.",
     category: "Frontend"
+  },
+  {
+    title: "OpenAPI 3.0 & Swagger UI",
+    desc: "Auto-generated REST API docs from Zod schemas at /api/docs and raw JSON spec at /api/docs.json.",
+    category: "Backend"
+  },
+  {
+    title: "Agent-Driven Development",
+    desc: "Pre-configured AI agent instructions for Antigravity, Claude Code, Cursor, and GitHub Copilot.",
+    category: "Shared"
   }
 ];

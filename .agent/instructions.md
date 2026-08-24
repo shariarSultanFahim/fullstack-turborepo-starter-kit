@@ -185,10 +185,11 @@ src/
         <module>.validation.ts
   config/          # index.ts (env config), passport.ts, strategies/
   DB/              # Prisma client initialization
+  docs/          # OpenAPI registry, generators & Swagger router
   enums/           # Shared TypeScript enums
   errors/          # ApiError.ts, handleZodError.ts, handleValidationError.ts
   helpers/         # emailHelper.ts, jwtHelper.ts, etc.
-  routes/          # index.ts — root router aggregating all module routes
+  routes/          # Versioned route aggregators (index.ts, v1/, etc.)
   shared/          # catchAsync.ts, sendResponse.ts, logger.ts, prisma.ts, emailTemplate.ts
   types/           # TypeScript types/interfaces (IUser, ILoginData, etc.)
   util/            # Pure utility functions (generateOTP.ts, cryptoToken.ts)
@@ -196,12 +197,28 @@ src/
   server.ts        # HTTP server entry point
 ```
 
-### Module Pattern (Controller / Service / Route / Validation)
-Each module follows a strict 4-file pattern:
+### Module Pattern (Controller / Service / Route / Validation / OpenAPI)
+Each module follows a strict 5-file pattern (4 core + 1 OpenAPI):
 - **`<module>.validation.ts`** — Zod schemas for request validation. Names: `create<Action>ZodSchema`.
 - **`<module>.route.ts`** — Express router. Mount `validateRequest(schema)` before the controller.
 - **`<module>.controller.ts`** — Thin handlers. Use `catchAsync`. Call service, call `sendResponse`.
 - **`<module>.service.ts`** — All business logic and Prisma queries. Throws `ApiError` on domain errors.
+- **`<module>.openapi.ts`** — OpenAPI 3.0 schema and route registration. Extends Zod schemas via `.openapi()` and registers paths with `registry.registerPath({...})`.
+
+### Mandatory OpenAPI Documentation Rule (ALWAYS REQUIRED FOR APIS)
+Whenever creating or updating any API route, endpoint, or feature module in `apps/api`:
+- **Always create/update `<module>.openapi.ts`** in the module directory.
+- Extend existing Zod schemas from `<module>.validation.ts` using `.openapi({ description, example })` without modifying the validation file.
+- Register all endpoints with `registry.registerPath({...})` from `src/docs/openapi-registry.ts`.
+- Use `createSuccessResponseSchema(...)` and `createErrorResponseSchema(...)` helpers to ensure OpenAPI specs strictly match `sendResponse` and `globalErrorHandler` response shapes.
+- Import the `<module>.openapi.ts` file in `src/docs/generate-openapi.ts`.
+- **Never** write inline JSDoc Swagger comments — all OpenAPI definitions belong in `<module>.openapi.ts`.
+- Endpoints are served via Swagger UI at `/api/docs` and raw spec at `/api/docs.json`.
+
+### API Versioning & Routing
+- All routes must be organized under version directories: `src/routes/v1/` and mounted under `/api/v1`.
+- `src/routes/index.ts` aggregates versions (`/v1`, `/v2`, etc.).
+- Adding a new API version (e.g. `v2`) involves creating `src/routes/v2/index.ts` and mounting it alongside `v1` in `src/routes/index.ts` without breaking or duplicating unchanged `v1` modules.
 
 ### Request Validation
 - Every mutating route must have a Zod validation schema in `<module>.validation.ts`.
