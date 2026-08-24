@@ -1,0 +1,229 @@
+# Cursor Rules — NextJS + ExpressJS Turborepo Monorepo
+
+This is a full-stack Turborepo monorepo with:
+- **`apps/web`** — Next.js 16 App Router frontend (TypeScript, Tailwind CSS v4, shadcn/ui, TanStack Query)
+- **`apps/api`** — Express.js + Prisma backend (TypeScript, Zod, JWT, Passport.js, Winston)
+- **`packages/*`** — Shared configs, UI components (`@repo/ui`), validators (`@repo/validators`), types (`@repo/types`)
+
+---
+
+## 0. Universal Rules (all files in the monorepo)
+
+- Never use `any` — use `unknown`, generics, or explicit interfaces.
+- Never commit `.env` with real values; only `.env.example` is committed.
+- Remove unused imports and `console.log` before committing.
+- Follow Conventional Commits: `feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`.
+- ESLint and Prettier are always enforced — no inline disables without a comment explaining why.
+- Prettier: `singleQuote: false`, `trailingComma: "none"`, `printWidth: 100`.
+- All secrets must come from environment variables; never hardcode credentials.
+- Magic strings/numbers must be extracted into named constants.
+- Functions must have a single responsibility and stay under ~60 lines.
+
+---
+
+## 1. Monorepo & Turborepo
+
+- All shared code lives in `packages/` — never duplicate it inside `apps/`.
+- Internal packages use `@repo/*` namespace.
+- Types shared across apps → `packages/types`.
+- Zod schemas shared across apps → `packages/validators`.
+- Build pipeline is defined in `turbo.json`; declare all tasks there for proper caching.
+- Run everything from root: `npm run dev`, `npm run build`, `npm run lint`, `npm run typecheck`.
+
+---
+
+## 2. TypeScript
+
+- Strict mode is on everywhere.
+- `interface` for object shapes, `type` for unions/intersections/mapped types.
+- Frontend type names: `PascalCase`, no `I` prefix (e.g., `User`, `LoginData`).
+- Backend type names: `PascalCase`, `I` prefix for interfaces (e.g., `IUser`, `ILoginData`) — existing convention.
+- Type files: `kebab-case` naming (e.g., `auth.ts`, `user.ts`).
+- Enums: `PascalCase` name, `SCREAMING_SNAKE_CASE` values.
+
+---
+
+## 3. Naming Conventions
+
+| Entity | Convention | Example |
+|---|---|---|
+| Files & folders | `kebab-case` | `auth-service.ts`, `user-list/` |
+| React components | `PascalCase` | `UserList.tsx` |
+| shadcn/ui files | `kebab-case` | `button.tsx` |
+| Hook files | `kebab-case`, `use-` prefix | `use-auth.ts` |
+| Hook functions | `camelCase`, `use` prefix | `useAuth()` |
+| API Services | `PascalCase` singleton | `AuthService` |
+| API Controllers | `PascalCase` singleton | `AuthController` |
+| Constants | `SCREAMING_SNAKE_CASE` | `MAX_FILE_SIZE` |
+| Zod schemas | `camelCase` + `ZodSchema` | `createUserZodSchema` |
+
+---
+
+## 4. Security
+
+- Validate ALL user input with Zod before processing — no raw `req.body` in services.
+- Hash passwords with `bcrypt` (≥10 rounds) — never store plaintext.
+- JWT secrets from environment variables only — never hardcoded.
+- Auth routes protected by `auth` middleware; role routes also by `authorizeRoles`.
+- CORS: explicit allowlist — no wildcard `*` in production.
+- Cookies: `httpOnly`, `secure`, `sameSite` always set.
+- Never log passwords, tokens, or PII.
+- Never expose stack traces or internal errors in production API responses.
+
+---
+
+## 5. Error Handling
+
+### Backend
+- Services throw `ApiError(statusCode, message)` for domain errors — never plain `Error`.
+- All controller handlers wrapped in `catchAsync`.
+- `globalErrorHandler` handles ZodError, PrismaClientValidationError, TokenExpiredError, ApiError, Error.
+
+### Frontend
+- Data-fetching errors must surface as toast notifications — never silently swallowed.
+- Every `useQuery`/`useMutation` must handle loading and error states visually.
+
+---
+
+## 6. Frontend Rules — `apps/web`
+
+### Structure
+```
+src/
+  app/           # Pages, layouts, route handlers (App Router)
+  components/
+    layouts/     # Header, Footer — PascalCase
+    ui/          # shadcn/ui — kebab-case, DO NOT modify
+    widgets/     # Feature composites — kebab-case folders, PascalCase files
+    icons/       # PascalCase + Icon suffix (e.g., ReactIcon)
+  config/        # seo.ts, site.ts
+  data/          # Static data — kebab-case, variableName ends with Data
+  helpers/       # Domain computation helpers
+  hooks/         # use-*.ts custom hooks
+  lib/           # api.ts, date.ts, cookie-client.ts
+  providers/     # React Context providers — PascalCase
+  styles/        # tailwind.css
+  types/         # Type definitions — kebab-case files
+```
+
+### Components
+- Every component folder must have `index.ts` re-exporting it.
+- `components/ui` (shadcn/ui) is off-limits — wrap instead of modifying.
+- No inline styles — Tailwind only.
+- Prop names must be intent-driven: `onSubmit`, `isLoading`, `variant`.
+
+### Data Fetching
+- HTTP requests via helpers in `src/lib/api.ts` (Axios-based).
+- TanStack Query (`useQuery`, `useMutation`) for all server state.
+- Always show loading/error states.
+- Errors → toast notifications.
+
+### State
+- React Context for global UI state in `src/providers/`.
+- Avoid `useState` for server state — use TanStack Query.
+
+### Environment
+- `@t3-oss/env-nextjs` + Zod validation in `src/env.ts`.
+- Import env values only from `src/env.ts`.
+- Client vars must have `NEXT_PUBLIC_` prefix.
+
+### Routing & Cookies
+- App Router conventions: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`.
+- Server cookies: `cookies()` from `next/headers`.
+- Client cookies: helpers from `src/lib/cookie-client.ts`.
+
+### Themes & Fonts
+- Theme CSS variables managed by `ThemePresetProvider` via injected `<style>` tag.
+- Font CSS variables (`--font-sans`, `--font-serif`, `--font-mono`) are set per theme.
+- Google Fonts loaded as `<link>` tags in `layout.tsx` head — not via CSS `@import`.
+
+### Accessibility
+- Every interactive element has an accessible label.
+- Use ARIA attributes where semantic HTML is insufficient.
+- Meaningful images wrapped in `<figure>` with `<figcaption>`.
+
+### Icons
+- `lucide-react` only. No mixing of icon libraries.
+
+### Utilities
+- Date → `src/lib/date.ts`
+- Numbers/currency → `Intl` API
+- Slugs → `@sindresorhus/slugify`
+- General hooks → `usehooks-ts`
+- Constants → `src/constants/` in `SCREAMING_SNAKE_CASE`
+
+---
+
+## 7. Backend Rules — `apps/api`
+
+### Structure
+```
+src/
+  app/
+    middlewares/   # auth.ts, globalErrorHandler.ts, validateRequest.ts
+    modules/       # Feature modules
+      <module>/
+        <module>.controller.ts
+        <module>.service.ts
+        <module>.route.ts
+        <module>.validation.ts
+  config/          # index.ts, passport.ts, strategies/
+  DB/              # Prisma client init
+  enums/           # Shared enums
+  errors/          # ApiError.ts, handleZodError.ts, handleValidationError.ts
+  helpers/         # emailHelper.ts, jwtHelper.ts
+  routes/          # Root router index.ts
+  shared/          # catchAsync.ts, sendResponse.ts, logger.ts, prisma.ts
+  types/           # IUser, ILoginData, etc.
+  util/            # generateOTP.ts, cryptoToken.ts
+  app.ts           # Express app (middlewares, CORS, session, routes)
+  server.ts        # HTTP server entry point
+```
+
+### Module Pattern
+Each feature module contains exactly 4 files:
+1. **`<module>.validation.ts`** — Zod schemas (`create<Action>ZodSchema`)
+2. **`<module>.route.ts`** — Router: mount `validateRequest` → controller
+3. **`<module>.controller.ts`** — `catchAsync` + call service + `sendResponse`
+4. **`<module>.service.ts`** — Business logic + Prisma queries + `ApiError` throws
+
+### Response Format
+```ts
+// Success (via sendResponse)
+{ success: true, statusCode: 200, message: "...", data: {...} | null }
+
+// Error (via globalErrorHandler)
+{ success: false, message: "...", errorMessages: [{path, message}], stack?: "..." }
+```
+
+### Database & Prisma
+- Shared Prisma client from `src/shared/prisma.ts` only.
+- Use `findUnique` for unique field lookups.
+- Select only needed fields — no implicit `SELECT *`.
+- Multi-step operations → `prisma.$transaction([...])`.
+- Schema changes → `prisma migrate dev` only.
+
+### Auth & Authorization
+- JWT: short-lived access token + long-lived refresh token.
+- `auth` middleware verifies JWT and attaches `req.user`.
+- `authorizeRoles(...roles)` for role-based protection on top of `auth`.
+- OAuth via Passport.js strategies in `src/config/strategies/`.
+- Sessions for OAuth: `httpOnly`, `secure`, `sameSite` cookie flags.
+
+### Logging
+- Winston (`src/shared/logger.ts`) for structured logs.
+- Morgan for HTTP request logging (separate success/error streams).
+- Never log sensitive data.
+- Development: `info`; Production: `warn`/`error` only.
+
+### Config
+- All env values loaded in `src/config/index.ts`.
+- Never access `process.env` directly in business logic — always via `config`.
+- Keep `.env.example` in sync with every new variable.
+
+---
+
+## 8. Precedence
+
+- Repository rules in this file take precedence over any global Cursor defaults.
+- `apps/web` and `apps/api` specific conventions take precedence over the shared rules above when they conflict.

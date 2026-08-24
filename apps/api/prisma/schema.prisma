@@ -1,0 +1,62 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum USER_ROLES {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum Status {
+  active
+  delete
+}
+
+enum Provider {
+  local
+  google
+  facebook
+  github
+}
+
+model User {
+  id             String      @id @default(uuid())
+  name           String
+  firstName      String?
+  lastName       String?
+  role           USER_ROLES
+  contact        String?
+  email          String      @unique
+  password       String?
+  location       String?
+  image          String?     @default("https://i.ibb.co.com/d0KBxkHm/f2011bfb4e87a2e5219bd4c2fb02a5e9.jpg")
+  avatar         String?     @default("https://i.ibb.co.com/Cs5Kr1gT/dc262f1cd78130b972c5dbd8643ad972.jpg")
+  status         Status      @default(active)
+  verified       Boolean     @default(false)
+  provider       Provider    @default(local)
+  providerId     String?
+  
+  authIsResetPassword Boolean? @default(false)
+  authOneTimeCode     Int?
+  authExpireAt        DateTime?
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  resetTokens    ResetToken[]
+}
+
+model ResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String
+  expireAt  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

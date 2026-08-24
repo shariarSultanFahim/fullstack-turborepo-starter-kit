@@ -1,0 +1,21 @@
+{
+  "name": "@repo/types",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared TypeScript types and interfaces for the monorepo",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/tsconfig": "*",
+    "typescript": "^5.9.3"
+  }
+}

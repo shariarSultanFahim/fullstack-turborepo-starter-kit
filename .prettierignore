@@ -1,0 +1,12 @@
+node_modules
+dist
+.next
+out
+build
+coverage
+.turbo
+*.tsbuildinfo
+next-env.d.ts
+.eslintcache
+package-lock.json
+src/generated/prisma
